@@ -81,7 +81,10 @@ PetscErrorCode UMViewSolutionBinary(UM *mesh, char *filename, Vec u) {
     PetscCall(VecGetSize(u,&Nu));
     if (Nu != mesh->N) {
         SETERRQ(PETSC_COMM_SELF,1,
+           "incompatible sizes of u  and number of nodes \n");
+        /*SETERRQ(PETSC_COMM_SELF,1,
            "incompatible sizes of u (=%d) and number of nodes (=%d)\n",Nu,mesh->N);
+        */
     }
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_WRITE,&viewer));
     PetscCall(VecView(u,viewer));
@@ -103,7 +106,8 @@ PetscErrorCode UMReadNodes(UM *mesh, char *filename) {
     PetscCall(PetscViewerDestroy(&viewer));
     PetscCall(VecGetSize(mesh->loc,&twoN));
     if (twoN % 2 != 0) {
-        SETERRQ(PETSC_COMM_SELF,2,"node locations loaded from %s are not N pairs\n",filename);
+        /*SETERRQ(PETSC_COMM_SELF,2,"node locations loaded from %s are not N pairs\n",filename);*/
+        SETERRQ(PETSC_COMM_SELF,2,"node locations loaded from are not N pairs\n");
     }
     mesh->N = twoN / 2;
     return 0;
@@ -126,8 +130,10 @@ PetscErrorCode UMCheckElements(UM *mesh) {
         for (m = 0; m < 3; m++) {
             if ((ae[3*k+m] < 0) || (ae[3*k+m] >= mesh->N)) {
                 SETERRQ(PETSC_COMM_SELF,3,
+                   "index e[]= invalid: not between 0 and N-1=\n");
+                /*SETERRQ(PETSC_COMM_SELF,3,
                    "index e[%d]=%d invalid: not between 0 and N-1=%d\n",
-                   3*k+m,ae[3*k+m],mesh->N-1);
+                   3*k+m,ae[3*k+m],mesh->N-1);*/
             }
         }
         // FIXME: could add check for distinct indices
@@ -160,8 +166,10 @@ PetscErrorCode UMCheckBoundaryData(UM *mesh) {
                 break;
             default :
                 SETERRQ(PETSC_COMM_SELF,5,
+                   "boundary flag bf[]= invalid: not in {0,1,2}\n");
+                /*SETERRQ(PETSC_COMM_SELF,5,
                    "boundary flag bf[%d]=%d invalid: not in {0,1,2}\n",
-                   n,abf[n]);
+                   n,abf[n]);*/
         }
     }
     PetscCall(ISRestoreIndices(mesh->bf,&abf));
@@ -171,8 +179,10 @@ PetscErrorCode UMCheckBoundaryData(UM *mesh) {
             for (m = 0; m < 2; m++) {
                 if ((ans[2*n+m] < 0) || (ans[2*n+m] >= mesh->N)) {
                     SETERRQ(PETSC_COMM_SELF,6,
+                       "index ns[]= invalid: not between 0 and N-1=\n");
+                    /*SETERRQ(PETSC_COMM_SELF,6,
                        "index ns[%d]=%d invalid: not between 0 and N-1=%d\n",
-                       2*n+m,ans[3*n+m],mesh->N-1);
+                       2*n+m,ans[3*n+m],mesh->N-1);*/
                 }
             }
         }
@@ -199,7 +209,8 @@ PetscErrorCode UMReadISs(UM *mesh, char *filename) {
     PetscCall(ISGetSize(mesh->e,&(mesh->K)));
     if (mesh->K % 3 != 0) {
         SETERRQ(PETSC_COMM_SELF,3,
-                 "IS e loaded from %s is wrong size for list of element triples\n",filename);
+                 "IS e loaded from  is wrong size for list of element triples\n");
+                 /*"IS e loaded from %s is wrong size for list of element triples\n",filename);*/
     }
     mesh->K /= 3;
     // create and load bf
@@ -208,7 +219,8 @@ PetscErrorCode UMReadISs(UM *mesh, char *filename) {
     PetscCall(ISGetSize(mesh->bf,&n_bf));
     if (n_bf != mesh->N) {
         SETERRQ(PETSC_COMM_SELF,4,
-                 "IS bf loaded from %s is wrong size for list of boundary flags\n",filename);
+                 "IS bf loaded from  is wrong size for list of boundary flags\n");
+                 //"IS bf loaded from %s is wrong size for list of boundary flags\n",filename);
     }
     // FIXME  seems there is no way to tell if file is empty at this point
     // create and load ns last ... may *start with a negative value* in which case set P = 0
@@ -224,7 +236,8 @@ PetscErrorCode UMReadISs(UM *mesh, char *filename) {
         PetscCall(ISGetSize(mesh->ns,&(mesh->P)));
         if (mesh->P % 2 != 0) {
             SETERRQ(PETSC_COMM_SELF,4,
-                     "IS s loaded from %s is wrong size for list of Neumann boundary segment pairs\n",filename);
+                     "IS s loaded from  is wrong size for list of Neumann boundary segment pairs\n");
+                     //"IS s loaded from %s is wrong size for list of Neumann boundary segment pairs\n",filename);
         }
         mesh->P /= 2;
     }
